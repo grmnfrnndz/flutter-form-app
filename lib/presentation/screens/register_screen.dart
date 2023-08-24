@@ -1,33 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:form_app/presentation/blocs/register/register_cubit.dart';
 import 'package:form_app/presentation/widgets/widgets.dart';
 
-
 class RegisterScreen extends StatelessWidget {
-
   static String name = 'register_screen';
 
   const RegisterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('New User')
-        ),
-        body: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                FlutterLogo(size: 100,),
+    return Scaffold(
+      appBar: AppBar(title: const Text('New User')),
+      body: BlocProvider(
+        create: (context) => RegisterCubit(),
+        child: const _RegisterView(),
+      ),
+    );
+  }
+}
 
-                _RegisterForm(),
-                               
-                SizedBox(height: 20,),
-              ],
-            ),
+class _RegisterView extends StatelessWidget {
+  const _RegisterView();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SafeArea(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FlutterLogo(
+                size: 100,
+              ),
+              _RegisterForm(),
+              SizedBox(
+                height: 20,
+              ),
+            ],
           ),
         ),
       ),
@@ -43,32 +55,39 @@ class _RegisterForm extends StatefulWidget {
 }
 
 class _RegisterFormState extends State<_RegisterForm> {
-
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  String username = '';
-  String email = '';
-  String password = '';
 
   @override
   Widget build(BuildContext context) {
+    final registerCubit = context.watch<RegisterCubit>();
+
     return Form(
       key: _formKey,
       child: Column(
         children: [
           CustomTextFormField(
             label: 'Username',
-            onChanged: (value) => username = value,
+            onChanged: (value) {
+              registerCubit.usernameChanged(value);
+              _formKey.currentState!.validate();
+            },
             validator: (String? value) {
               if (value == null || value.isEmpty) return 'Field Required';
               if (value.trim().isEmpty) return 'Field Required';
-              if (value.length < 6) return 'Username must be greather length 6 characters';
+              if (value.length < 6)
+                return 'Username must be greather length 6 characters';
               return null;
             },
           ),
-          const SizedBox(height: 10,),
+          const SizedBox(
+            height: 10,
+          ),
           CustomTextFormField(
             label: 'Email',
-            onChanged: (value) => email = value,
+            onChanged: (value) {
+              registerCubit.emailChanged(value);
+              _formKey.currentState!.validate();
+            },
             validator: (String? value) {
               if (value == null || value.isEmpty) return 'Field Required';
               if (value.trim().isEmpty) return 'Field Required';
@@ -78,30 +97,38 @@ class _RegisterFormState extends State<_RegisterForm> {
               return null;
             },
           ),
-          const SizedBox(height: 10,),
+          const SizedBox(
+            height: 10,
+          ),
           CustomTextFormField(
             label: 'Password',
-            onChanged: (value) => password = value,
+            onChanged: (value) {
+              registerCubit.passwordChanged(value);
+              _formKey.currentState!.validate();
+            },
             validator: (String? value) {
               if (value == null || value.isEmpty) return 'Field Required';
               if (value.trim().isEmpty) return 'Field Required';
-              if (value.length < 6) return 'Username must be greather length 6 characters';
+              if (value.length < 6)
+                return 'Username must be greather length 6 characters';
 
               return null;
             },
             obscureText: true,
           ),
-          
+          const SizedBox(
+            height: 20,
+          ),
+          FilledButton.tonalIcon(
+            onPressed: () {
+              final isValid = _formKey.currentState!.validate();
+              if (!isValid) return;
 
-          const SizedBox(height: 20,),
-
-          FilledButton.tonalIcon(onPressed: () {
-
-            final isValid = _formKey.currentState!.validate();
-            if (!isValid) return;
-
-            print('$username - $password - $email');
-          }, icon: const Icon(Icons.save), label: const Text('Create User'),),
+              registerCubit.onSubmit();
+            },
+            icon: const Icon(Icons.save),
+            label: const Text('Create User'),
+          ),
         ],
       ),
     );
