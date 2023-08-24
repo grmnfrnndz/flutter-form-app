@@ -21,6 +21,9 @@ class AppTheme {
     brightness: isDarkMode ? Brightness.dark : Brightness.light,
     listTileTheme: ListTileThemeData(
       iconColor: colors[selectedSeedColor]
+    ),
+    appBarTheme: const AppBarTheme(
+      centerTitle: true,
     )
   );
 }
